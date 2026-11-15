@@ -37,7 +37,7 @@ Clean Book is an online bookstore website designed to provide customers with a c
 |  Lê Trọng Phát| Project Information |
 | Đinh Trọng Phú | System Planning |
 | Trần Gia Triệu | Research and Analysis |
-| Trương Hoàng Đăng Khoa | Team Leader and Project Coordination |
+| Trương Hoàng Đăng Khoa (gitname HanLapLHDC) | Team Leader and Project Coordination |
 
 ## 6. Project Status
 
