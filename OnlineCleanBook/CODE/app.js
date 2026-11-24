@@ -1,9 +1,6 @@
-/* MỘC BOOKS — Giao diện cửa hàng sách trực tuyến.
-   Danh mục và sản phẩm ban đầu được PHP tải từ MySQL. Giỏ hàng và các thao tác
-   quản trị/đặt hàng ở bản giao diện này vẫn được lưu trong trình duyệt. */
 'use strict';
 const DB_KEY='mocbooks_storefront_db_v3';
-const PAYMENT_BANK={name:'VietinBank',bin:'970415',account:'100888348927',holder:'DINH TRONG PHU',qrFallback:'images/qr-vietinbank.png'};
+const PAYMENT_BANK={name:'VietinBank',bin:'970415',account:'100888348927',holder:'DINH TRONG PHU'};
 const CART_KEY='mocbooks_sql_cp02_cart_v2';
 const USER_KEY='mocbooks_sql_cp02_user_v2';
 const state={route:'home',filter:0,search:'',sort:'seed',adminTab:'overview',modal:'',editId:null,detailQty:1,mobile:false,lastOrder:null,paymentRef:makePaymentRef()};
@@ -17,9 +14,9 @@ function save(){safePut(DB_KEY,db);safePut(CART_KEY,cart);safePut(USER_KEY,demoU
 function esc(x){return String(x??'').replace(/[&<>"']/g,s=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[s]))}
 function num(x){return Math.round(Number(x)||0)}
 function money(x){return num(x).toLocaleString('vi-VN')+'đ'}
-// Mã tham chiếu hiển thị trên hướng dẫn thanh toán; cửa hàng chưa tự đối soát ngân hàng.
+
 function makePaymentRef(){return 'MB'+Date.now().toString(36).toUpperCase()+Math.random().toString(36).slice(2,5).toUpperCase()}
-// Quick Link VietQR: số tiền sẽ được điền sẵn khi khách quét mã. Không cần API key phía trình duyệt.
+
 function dynamicQrUrl(amount,ref){const params=new URLSearchParams({amount:String(num(amount)),addInfo:String(ref),accountName:PAYMENT_BANK.holder});return `https://img.vietqr.io/image/${PAYMENT_BANK.bin}-${PAYMENT_BANK.account}-compact2.png?${params}`}
 function user(){return db?.users.find(u=>u.id===demoUserId)||null}
 function isAdmin(){return user()?.role==='admin'}
@@ -103,9 +100,8 @@ if(e.target.id==='checkout-form'){if(!cart.length){toast('Giỏ hàng đang tr�
 else if(e.target.id==='book-form'){if(!isAdmin())return;const current=state.editId!=null?book(state.editId):null;const data={id:current?.id??Math.max(0,...db.books.map(x=>x.id))+1,category_id:Number(f.get('category_id')),title:String(f.get('title')||'').trim(),author:String(f.get('author')||'').trim(),price:num(f.get('price')),member_price:num(f.get('member_price')),stock_quantity:Number(f.get('stock_quantity')),image_url:String(f.get('image_url')||'').trim()||null,description:String(f.get('description')||'').trim()||null};if(!data.title||!data.author||data.price<0||data.member_price<0||data.member_price>data.price||!Number.isInteger(data.stock_quantity)||data.stock_quantity<0||!db.categories.some(c=>c.id===data.category_id)){toast('Kiểm tra lại tên, giá và tồn kho. Giá thành viên không được lớn hơn giá thường .');return}if(current)db.books=db.books.map(b=>b.id===current.id?data:b);else db.books.push(data);state.modal='';save();render();toast('✓ Đã lưu thông tin sách ')}
 else if(e.target.id==='category-form'){if(!isAdmin())return;const data={id:state.editId??Math.max(0,...db.categories.map(x=>x.id))+1,name:String(f.get('name')||'').trim(),slug:String(f.get('slug')||'').trim(),description:String(f.get('description')||'').trim()||null};if(!data.name||!data.slug||db.categories.some(c=>c.slug===data.slug&&c.id!==data.id)){toast('Tên/slug trống hoặc slug đã tồn tại');return}if(state.editId===null)db.categories.push(data);else db.categories=db.categories.map(c=>c.id===data.id?data:c);state.modal='';save();render();toast('✓ Đã lưu danh mục ')}
 });
-// Nếu Quick Link không tải được (mất Internet/dịch vụ tạm lỗi), dùng QR cố định gốc.
-// Khi đó ứng dụng ngân hàng KHÔNG tự điền số tiền và người mua phải nhập thủ công.
-document.addEventListener('error',e=>{const el=e.target;if(!(el instanceof HTMLImageElement)||!el.matches('[data-qr-dynamic]')||el.dataset.fallback==='1')return;el.dataset.fallback='1';el.src=PAYMENT_BANK.qrFallback;el.alt='QR VietinBank cố định dự phòng, không tự điền số tiền';const panel=el.closest('.bank-payment');const link=el.closest('.qr-photo-link');if(link)link.href=PAYMENT_BANK.qrFallback;const note=panel?.querySelector('.dynamic-note');if(note){note.textContent='Không tải được mã QR tự điền. Ảnh dự phòng là QR cố định: hãy nhập số tiền và nội dung chuyển khoản theo thông tin đang hiển thị.';note.classList.add('qr-fallback-warning')}},true);
+
+document.addEventListener('error',e=>{const el=e.target;if(!(el instanceof HTMLImageElement)||!el.matches('[data-qr-dynamic]')||el.dataset.fallback==='1')return;el.dataset.fallback='1';el.hidden=true;const link=el.closest('.qr-photo-link');if(link){link.removeAttribute('href');link.setAttribute('aria-disabled','true')}const note=el.closest('.bank-payment')?.querySelector('.dynamic-note');if(note){note.textContent='Không tải được mã QR. Vui lòng nhập số tài khoản, số tiền và nội dung chuyển khoản hiển thị bên cạnh theo cách thủ công.';note.classList.add('qr-fallback-warning')}},true);
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&state.modal){state.modal='';render()}});
 window.addEventListener('hashchange',()=>{state.route=hashRoute();state.modal='';state.mobile=false;render();window.scrollTo({top:0,behavior:'instant'})});
 async function boot(){
