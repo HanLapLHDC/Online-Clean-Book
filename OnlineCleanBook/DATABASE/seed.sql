@@ -14,9 +14,9 @@ INSERT INTO books (category_id, title, author, price, member_price, stock_quanti
 (3, 'Clean Code', 'Robert C. Martin', 220000.00, 185000.00, 12, '/images/clean-code.jpg', 'Kỹ thuật viết mã sạch, dễ bảo trì');
 
 INSERT INTO users (name, email, password_hash, role, is_member) VALUES
-('Quản trị cửa hàng', 'admin@bookstore.local', 'hashed_admin_pass', 'admin', FALSE),
-('Nguyễn Thành Viên', 'member@bookstore.local', 'hashed_member_pass', 'customer', TRUE),
-('Trần Khách Thường', 'user@bookstore.local', 'hashed_user_pass', 'customer', FALSE);
+('Quản trị cửa hàng', 'admin@bookstore.local', '$2y$12$l/KNF4vhwGxRSFRBr2gKxuyIwL44Jvt9dh53qKv4uG6fCiXCMJ3y.', 'admin', FALSE),
+('Nguyễn Thành Viên', 'member@bookstore.local', '$2y$12$O/At543ySI/xCFyqFZYzzefWHtxt4wW6dXXKIlQxWqOKGMG.xLW7.', 'customer', TRUE),
+('Trần Khách Thường', 'user@bookstore.local', '$2y$12$Uwhi54J0HldtREsX7TjtaOaprhdUesmiI9zdoUQ4MV0nNfmyGjSYq', 'customer', FALSE);
 
 INSERT INTO orders (user_id, guest_name, guest_email, guest_phone, guest_address, total_amount, status) VALUES
 (NULL, 'Lê Khách Vãng Lai', 'guest@example.com', '0901234567', '123 Nguyen Trai, Quan 1, TP.HCM', 85000.00, 'pending'),
