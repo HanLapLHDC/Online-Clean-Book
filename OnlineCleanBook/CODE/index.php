@@ -1,19 +1,10 @@
 <?php
-// Mộc Books - Trang cửa hàng PHP. Cập nhật thông tin kết nối nếu môi trường của bạn khác.
-$DB_HOST = '127.0.0.1';
-$DB_NAME = 'bookstore_dev';
-$DB_USER = 'root';
-$DB_PASS = '';
+require_once __DIR__ . '/config.php';
 
 $storeData = null;
 $connectionError = '';
 try {
-    $pdo = new PDO(
-        "mysql:host={$DB_HOST};dbname={$DB_NAME};charset=utf8mb4",
-        $DB_USER,
-        $DB_PASS,
-        [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION, PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC]
-    );
+    $pdo = mocbooks_pdo();
 
     $categories = $pdo->query('SELECT id, name, slug, description FROM categories ORDER BY id')->fetchAll();
     $books = $pdo->query('SELECT id, category_id, title, author, price, member_price, stock_quantity, image_url, description FROM books ORDER BY id')->fetchAll();
@@ -53,8 +44,9 @@ try {
         'order_items' => $orderItems
     ];
 } catch (Throwable $e) {
-    // Không hiển thị thông tin đăng nhập hay lỗi SQL chi tiết ra ngoài trình duyệt.
-    $connectionError = 'Chưa kết nối được cơ sở dữ liệu. Hãy kiểm tra MySQL, tên database bookstore_dev và hai file schema.sql, seed.sql.';
+    // Do not expose SQL details or local database credentials in the browser.
+    error_log('[MocBooks index] ' . $e->getMessage());
+    $connectionError = 'Chưa kết nối được cơ sở dữ liệu. Hãy kiểm tra MySQL, cấu hình trong config.php và hai file schema.sql, seed.sql.';
 }
 ?>
 <!doctype html>
@@ -83,7 +75,12 @@ try {
   <script>
     window.__MOCBOOKS_FALLBACK__ = <?= $storeData === null ? 'null' : json_encode($storeData, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>;
     window.__MOCBOOKS_DB_ERROR__ = <?= json_encode($connectionError, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>;
+    window.MOCBOOKS_ASYNC_CONFIG = {
+      endpoint: 'async_api.php',
+      csrfToken: <?= json_encode(mocbooks_csrf_token(), JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>
+    };
   </script>
   <script src="app.js" defer></script>
+  <script src="async_bridge.js" defer></script>
 </body>
 </html>
