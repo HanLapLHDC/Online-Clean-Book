@@ -9,4 +9,4 @@ COPY . .
 
 EXPOSE 10000
 
-CMD ["sh", "-c", "if [ -f /var/www/html/OnlineCleanBook/index.php ]; then DOCROOT=/var/www/html/OnlineCleanBook; elif [ -f /var/www/html/index.php ]; then DOCROOT=/var/www/html; else echo 'index.php not found'; exit 1; fi; php -S 0.0.0.0:${PORT:-10000} -t \"$DOCROOT\""]
+CMD ["sh", "-c", "if [ -f /var/www/html/OnlineCleanBook/CODE/index.php ]; then DOCROOT=/var/www/html/OnlineCleanBook; elif [ -f /var/www/html/index.php ]; then DOCROOT=/var/www/html; else echo 'index.php not found'; exit 1; fi; php -S 0.0.0.0:${PORT:-10000} -t \"$DOCROOT\""]
